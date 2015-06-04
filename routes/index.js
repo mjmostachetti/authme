@@ -55,6 +55,7 @@ router.post('/register', function(request, response) {
       password_confirm = request.body.password_confirm,
       database = app.get('database');
 
+
   if (password === password_confirm) {
     /*
     This will insert a new record into the users table. The insert
@@ -176,5 +177,38 @@ router.post('/login', function(request, response) {
     }
   });
 });
+
+router.get('/posttweet', function(request,response){
+  var database = app.get('database')
+  database('tweets').orderBy('posted_at', 'asc')
+  .then(function(resp){
+    response.render('tweets', {data : resp})
+  })
+})
+
+router.post('/posttweet', function(request, response){
+  var post = request.body.tweet,
+    database = app.get('database'),
+    username = request.cookies.username
+
+  // using request.cookies.username, find the id of that user in users table,
+  // add tweet with that user's id
+  database.select('id')
+    .from('users')
+    .where({username : username})
+    .then(function(resp){
+      var date = new Date(Date.now())
+      console.log(date);
+      database('tweets').insert({
+          user_id : resp[0].id,
+          body : post,
+          posted_at : date
+      })
+      .then(function(){
+        console.log('done')
+        response.redirect('/posttweet');
+      })
+    })
+})
 
 module.exports = router;

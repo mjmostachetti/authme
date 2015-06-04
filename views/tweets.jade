@@ -1,0 +1,18 @@
+extends layout
+
+block content
+	div
+		form(method="post" action="/posttweet")
+			h2 Post a tweet
+			div
+				label Whacha thinkin' 'bout?
+					input(type="text" name="tweet" placeholder="What are your thoughts?")
+			div
+				input(type="submit" value="say it!")
+	div
+		h2 Here come the tweets!
+		ul
+			each val in data
+				p= val.user_id 
+				p= val.body
+				p= val.posted_at
