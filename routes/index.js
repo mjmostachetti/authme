@@ -14,14 +14,15 @@ router.get('/', function(request, response, next) {
   */
   if (request.cookies.username) {
     username = request.cookies.username;
+    response.render('loggedin', { title: 'You are logged in!', username: username });
   } else {
     username = null;
+    response.render('loggedin', { title: 'Authorize Me!', username: username });
   }
   /*
   render the index page. The username variable will be either null
   or a string indicating the username.
   */
-  response.render('index', { title: 'Authorize Me!', username: username });
 });
 
 /*
@@ -64,31 +65,50 @@ router.post('/register', function(request, response) {
     worked with before. insert({}).then(function() {...}) is very similar
     to insert({}, function() {...});
     */
-    database('users').insert({
-      username: username,
-      password: password,
-    }).then(function() {
-      /*
-      Here we set a "username" cookie on the response. This is the cookie
-      that the GET handler above will look at to determine if the user is
-      logged in.
 
-      Then we redirect the user to the root path, which will cause their
-      browser to send another request that hits that GET handler.
-      */
-      response.cookie('username', username)
-      response.redirect('/');
-    });
+    
+    database.select('username')
+        .from('users')
+        .where({ username : username })
+        .then(function(resp){
+          if(resp.length === 0){
+            console.log('fun')
+            database('users').insert({
+            username: username,
+            password: password,
+            }).then(function() {
+              /*
+              Here we set a "username" cookie on the response. This is the cookie
+              that the GET handler above will look at to determine if the user is
+              logged in.
+
+              Then we redirect the user to the root path, which will cause their
+              browser to send another request that hits that GET handler.
+              */
+              response.cookie('username', username)
+              response.redirect('/');
+            });
+          }else{
+            console.log("User Already Exists")
+            response.render('loggedin', { 
+              title: 'Authorize Me!', 
+              username: username ,
+              info: "User Already Exists"
+            });
+          }
+
+        })
+
   } else {
     /*
     The user mistyped either their password or the confirmation, or both.
     Render the index page again, with an error message telling them what's
     wrong.
     */
-    response.render('index', {
+    response.render('loggedin', {
       title: 'Authorize Me!',
       user: null,
-      error: "Password didn't match confirmation"
+      info: "Password didn't match confirmation"
     });
   }
 });
