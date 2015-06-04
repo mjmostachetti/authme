@@ -180,7 +180,7 @@ router.post('/login', function(request, response) {
 
 router.get('/posttweet', function(request,response){
   var database = app.get('database')
-  database('tweets').orderBy('posted_at', 'desc')
+  database('users').join('tweets','users.id','tweets.user_id').orderBy('posted_at', 'desc')
   .then(function(resp){
     response.render('tweets', {data : resp})
   })
