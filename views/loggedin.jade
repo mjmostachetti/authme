@@ -2,7 +2,7 @@ extends layout
 
 block content
   h1= title
-    p You are not logged in. Would you like to be?
+    a(href="/logout") Logout
     p= info
     div
       form(method="post" action="/register")

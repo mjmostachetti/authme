@@ -180,7 +180,7 @@ router.post('/login', function(request, response) {
 
 router.get('/posttweet', function(request,response){
   var database = app.get('database')
-  database('tweets').orderBy('posted_at', 'asc')
+  database('tweets').orderBy('posted_at', 'desc')
   .then(function(resp){
     response.render('tweets', {data : resp})
   })
@@ -209,6 +209,11 @@ router.post('/posttweet', function(request, response){
         response.redirect('/posttweet');
       })
     })
+})
+
+router.get('/logout', function(request,response){
+  response.clearCookie('username', '');
+  response.redirect('/')
 })
 
 module.exports = router;
