@@ -216,4 +216,11 @@ router.get('/logout', function(request,response){
   response.redirect('/')
 })
 
+router.get('/followerstweets/:userid', function(request,response){
+  database('users').where({'user_id' : request.params.userid})
+    .then(function(resp){
+      console.log(resp);
+    })
+})
+
 module.exports = router;
