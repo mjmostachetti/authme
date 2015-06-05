@@ -10,9 +10,11 @@ block content
 			div
 				input(type="submit" value="say it!")
 	div
-		h2 Here come the tweets!
+		h2 Here are all the tweets!
 		ul
 			each val in data
-				p= val.username 
-				p= val.body
-				p= val.posted_at
+				br
+				p= 'Username: ' + val.username
+				p= 'Tweet: ' + val.body
+				p= 'Date: ' + val.posted_at
+				br

@@ -1,0 +1,13 @@
+extends layout
+
+block content
+	div
+		h2 Here are my followers' tweets!
+		ul
+			if data.length>0
+				each val in data
+					p= 'Username: ' + val.username
+					p= 'Tweet: ' + val.body
+					p= 'Date: ' + val.posted_at
+			else
+				p Your followers haven't tweeted yet!

@@ -2,35 +2,37 @@ extends layout
 
 block content
   h1= title
-    br
-    br
-    a(href="/logout") Logout
-    br
-    br
-    a(href='/follwerstweets') What are my followers doing.....
-    p= info
-    div
-      form(method="post" action="/register")
-        h2 Register a new account
-        div
-          label Username:
-            input(type="text" name="username" placeholder="username")
-        div
-          label Password:
-            input(type="password" name="password")
-        div
-          label Confirm Password:
-            input(type="password" name="password_confirm")
-        div
-          input(type="submit" value="Pleased to meet you!")
-    div
-      form(method="post" action="/login")
-        h2 Log into an existing account
-        div
-          label Username:
-            input(type="text" name="username" placeholder="username")
-        div
-          label Password:
-            input(type="password" name="password")
-        div
-          input(type="submit" value="Let me in!")
+    if username
+      p You are currently logged in as #{ username }
+      br
+      a(href="/logout") Logout
+      br
+      br
+      a(href='/followerstweets/' + user_id ) What are my followers doing.....
+    else
+      p= info
+      div
+        form(method="post" action="/register")
+          h2 Register a new account
+          div
+            label Username:
+              input(type="text" name="username" placeholder="username")
+          div
+            label Password:
+              input(type="password" name="password")
+          div
+            label Confirm Password:
+              input(type="password" name="password_confirm")
+          div
+            input(type="submit" value="Pleased to meet you!")
+      div
+        form(method="post" action="/login")
+          h2 Log into an existing account
+          div
+            label Username:
+              input(type="text" name="username" placeholder="username")
+          div
+            label Password:
+              input(type="password" name="password")
+          div
+            input(type="submit" value="Let me in!")

@@ -7,14 +7,26 @@ This is a request handler for loading the main page. It will check to see if
 a user is logged in, and render the index page either way.
 */
 router.get('/', function(request, response, next) {
-  var username;
+  var username,
+    database = app.get('database');
   /*
   Check to see if a user is logged in. If they have a cookie called
   "username," assume it contains their username
   */
   if (request.cookies.username) {
     username = request.cookies.username;
-    response.render('loggedin', { title: 'You are logged in!', username: username });
+    database('users')
+      .where({'users.username' : username})
+      .then(function(resp){
+        console.log(resp[0].id)
+        response.render('loggedin', { 
+          title: 'You are logged in!', 
+          username: username,
+          user_id : resp[0].id
+         });
+      })
+
+
   } else {
     username = null;
     response.render('loggedin', { title: 'Authorize Me!', username: username });
@@ -217,10 +229,40 @@ router.get('/logout', function(request,response){
 })
 
 router.get('/followerstweets/:userid', function(request,response){
-  database('users').where({'user_id' : request.params.userid})
+
+  var database = app.get('database');
+  var userid = request.params.userid;
+  console.log(userid);
+  database.select('*').from('followers')
+    .join('users', "followers.user_id","=","users.id")
+    .join("tweets", "followers.follower_id","=","tweets.user_id")
+    .where({ "followers.user_id" : userid})
+    .then(function(resp){
+      console.log(resp)
+      response.render('followerstweets', {data : resp})
+    })
+
+
+  /*
+
+  where({'user_id' : request.params.userid})
     .then(function(resp){
       console.log(resp);
-    })
+      var followerz = resp.map(function(aryObj){
+        var followerNum = aryObj.follower_id
+        return followerNum;
+      })
+      console.log(followerz)
+      var empty = {};
+      for(var x = 0; x < followerz.length;x++){
+        database.select('*').from('tweets').where({ user_id : followerz[x] })
+          .then(function(resp){
+            console.log(resp)
+          })
+      }
+      response.render('/followerstweets', {data : resp})
+      */
 })
+
 
 module.exports = router;
