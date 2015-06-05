@@ -9,5 +9,6 @@ block content
 					p= 'Username: ' + val.username
 					p= 'Tweet: ' + val.body
 					p= 'Date: ' + val.posted_at
+					a(href="/follow")= 'Follow ' + val.username
 			else
 				p Your followers haven't tweeted yet!

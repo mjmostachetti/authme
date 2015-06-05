@@ -11,10 +11,17 @@ block content
 				input(type="submit" value="say it!")
 	div
 		h2 Here are all the tweets!
+		p Order Username By: 
+		a(href="/orderByUserDesc") Desc
+		br
+		a(href="/orderByUserAsc") Asc
 		ul
+			p -------------------------------------------------
 			each val in data
 				br
 				p= 'Username: ' + val.username
 				p= 'Tweet: ' + val.body
 				p= 'Date: ' + val.posted_at
+				a(href="/follow/" + val.user_id)= 'Follow ' + val.username
 				br
+				p -------------------------------------------------

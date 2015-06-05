@@ -232,36 +232,60 @@ router.get('/followerstweets/:userid', function(request,response){
 
   var database = app.get('database');
   var userid = request.params.userid;
+
   console.log(userid);
   database.select('*').from('followers')
-    .join('users', "followers.user_id","=","users.id")
+    .join('users', "followers.follower_id","=","users.id")
     .join("tweets", "followers.follower_id","=","tweets.user_id")
     .where({ "followers.user_id" : userid})
     .then(function(resp){
       console.log(resp)
       response.render('followerstweets', {data : resp})
     })
+})
 
-
-  /*
-
-  where({'user_id' : request.params.userid})
+router.get('/orderByUserAsc', function(request,response){
+  var database = app.get('database');
+  
+  database('users')
+    .join('tweets','users.id','tweets.user_id').orderBy('username', 'asc')
     .then(function(resp){
-      console.log(resp);
-      var followerz = resp.map(function(aryObj){
-        var followerNum = aryObj.follower_id
-        return followerNum;
-      })
-      console.log(followerz)
-      var empty = {};
-      for(var x = 0; x < followerz.length;x++){
-        database.select('*').from('tweets').where({ user_id : followerz[x] })
-          .then(function(resp){
-            console.log(resp)
-          })
-      }
-      response.render('/followerstweets', {data : resp})
-      */
+      response.render('tweets', {data : resp})
+    })
+})
+
+router.get('/orderByUserDesc', function(request,response){
+  var database = app.get('database');
+  
+  database('users')
+    .join('tweets','users.id','tweets.user_id').orderBy('username', 'desc')
+    .then(function(resp){
+      console.log(resp)
+      response.render('tweets', {data : resp})
+    })
+})
+
+router.get('/follow/:userid', function(request,response){
+  var database = app.get('database')
+  var followerid = request.params.userid
+  var user = request.cookies.username
+  
+  console.log(followerid)
+  console.log(user)
+
+  database('users')
+    .where({ 'users.username' : user})
+    .then(function(resp){
+      console.log(resp)
+      database('followers')
+        .insert({
+          user_id: resp[0].id,
+          follower_id: followerid
+        })
+        .then(function(resp){
+          response.redirect('../posttweet')          
+        })
+    })
 })
 
 

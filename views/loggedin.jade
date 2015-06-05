@@ -1,14 +1,15 @@
 extends layout
 
 block content
+  br
+  a(href='/followerstweets/' + user_id ) What are my followers doing.....
+  br
+  if username
+    a(href="/logout") Logout
+  else
   h1= title
     if username
       p You are currently logged in as #{ username }
-      br
-      a(href="/logout") Logout
-      br
-      br
-      a(href='/followerstweets/' + user_id ) What are my followers doing.....
     else
       p= info
       div
