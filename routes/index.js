@@ -1,6 +1,16 @@
 var express = require('express');
 var router = express.Router();
-var app = require('../app')
+var app = require('../app');
+var redis = require('redis');
+var client = redis.createClient();
+
+client.on('connect', function() {
+    console.log('connected');
+});
+
+client.on('ready', function() {
+    console.log('ready');
+});
 
 /*
 This is a request handler for loading the main page. It will check to see if
@@ -189,6 +199,8 @@ router.post('/login', function(request, response) {
     }
   });
 });
+/*
+Working Version ***
 
 router.get('/posttweet', function(request,response){
   var database = app.get('database')
@@ -197,6 +209,39 @@ router.get('/posttweet', function(request,response){
     response.render('tweets', {data : resp})
   })
 })
+*/
+
+router.get('/flush',function(request,response){
+  client.del('allTweets')
+  response.render('index',{title:'Front Page'})
+})
+
+router.get('/posttweet', function(request,response){
+  if(client.lrange)
+  var database = app.get('database')
+  database('users').join('tweets','users.id','tweets.user_id').orderBy('posted_at', 'desc')
+  .then(function(resp){
+    var stringified = resp.map(function(thing){
+      return JSON.stringify(thing);
+    })
+
+    console.log(stringified)
+    for(var x = 0; x < stringified.length;x++){
+      client.lpush('allTweets',stringified[x])
+    }
+
+    client.lrange('allTweets',0,-1, function(err,result){
+      var funner = result.map(function(thing){
+        return JSON.parse(thing)
+      })
+      response.render('tweets', {data : funner})
+      })
+    })
+})
+  
+
+
+
 
 router.post('/posttweet', function(request, response){
   var post = request.body.tweet,
@@ -218,10 +263,13 @@ router.post('/posttweet', function(request, response){
       })
       .then(function(){
         console.log('done')
+        console.log('clearing cache')
+        client.del('allTweets')
         response.redirect('/posttweet');
+        })
       })
-    })
 })
+
 
 router.get('/logout', function(request,response){
   response.clearCookie('username', '');
@@ -264,7 +312,19 @@ router.get('/orderByUserDesc', function(request,response){
       response.render('tweets', {data : resp})
     })
 })
+/*
+router.get('/usertweets/:id', function(request,response){
+  //if cached in redis then render with that
+  client.get('user' + request.params.id,function(err,reply){
+  if(err){
 
+  }
+  //else query and database and store in redis and then render
+  else{
+
+  }
+})
+*/
 router.get('/follow/:userid', function(request,response){
   var database = app.get('database')
   var followerid = request.params.userid
