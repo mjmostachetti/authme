@@ -3,6 +3,9 @@ var router = express.Router();
 var app = require('../app');
 var redis = require('redis');
 var client = redis.createClient();
+var uuid = require('uuid')
+var nodemailer = require('nodemailer')
+
 
 client.on('connect', function() {
     console.log('connected');
@@ -33,8 +36,8 @@ router.get('/', function(request, response, next) {
           title: 'You are logged in!', 
           username: username,
           user_id : resp[0].id
-         });
-      })
+    });
+  })
 
 
   } else {
@@ -76,6 +79,10 @@ router.post('/register', function(request, response) {
       password = request.body.password,
       password_confirm = request.body.password_confirm,
       database = app.get('database');
+      userObj = {
+        "username" : username,
+        "password" : password
+      }
 
 
   if (password === password_confirm) {
@@ -96,21 +103,49 @@ router.post('/register', function(request, response) {
         .then(function(resp){
           if(resp.length === 0){
             console.log('fun')
+            
+            //send email verification
+
+            var nonce = uuid.v1();
+            var transporter = nodemailer.createTransport()
+            var mailOptions = {
+              from: 'John Doe <coolasdf@cooler.com>',
+              to: 'mjmostachetti@gmail.com',
+              subject: 'Verify!!!!',
+              text: 'http://localhost:3000/verify_email/' + nonce
+            }
+
+            transporter.sendMail(mailOptions, function (error,info){
+              if(error){
+                console.log(error);
+              } else {
+                console.log('Message sent: ' + info.reponse);
+                var userObjString = JSON.stringify(userObj)
+                client.set(nonce, userObjString, function(){
+                  console.log(nonce);
+                  console.log(userObjString);
+                  console.log('Cache set!');
+                })
+                response.render('index', {title: "Waiting for verification."})
+              }
+            })
+            /*
             database('users').insert({
             username: username,
             password: password,
             }).then(function() {
-              /*
+              
               Here we set a "username" cookie on the response. This is the cookie
               that the GET handler above will look at to determine if the user is
               logged in.
 
               Then we redirect the user to the root path, which will cause their
               browser to send another request that hits that GET handler.
-              */
+              
               response.cookie('username', username)
               response.redirect('/');
             });
+            */
           }else{
             console.log("User Already Exists")
             response.render('loggedin', { 
@@ -312,6 +347,28 @@ router.get('/orderByUserDesc', function(request,response){
       response.render('tweets', {data : resp})
     })
 })
+
+router.get('/orderByDateDesc', function(request,response){
+  var database = app.get('database');
+  
+  database('users')
+    .join('tweets','users.id','tweets.user_id').orderBy('posted_at', 'desc')
+    .then(function(resp){
+      console.log(resp)
+      response.render('tweets', {data : resp})
+    })
+})
+
+router.get('/orderByDateAsc', function(request,response){
+  var database = app.get('database');
+  
+  database('users')
+    .join('tweets','users.id','tweets.user_id').orderBy('posted_at', 'asc')
+    .then(function(resp){
+      console.log(resp)
+      response.render('tweets', {data : resp})
+    })
+})
 /*
 router.get('/usertweets/:id', function(request,response){
   //if cached in redis then render with that
@@ -347,6 +404,37 @@ router.get('/follow/:userid', function(request,response){
         })
     })
 })
+
+
+
+router.get('/verify_email/:nonce', function(request, response) {
+  var database = app.get('database');
+    client.get(request.params.nonce, function (error, userId) {
+      console.log(userId)
+      var jsonID = JSON.parse(userID)
+      console.log(jsonID)
+        client.del(request.params.nonce, function() {
+            if (userId) {
+              console.log(userId)
+              console.log('VERIFIED!')
+              database('users').insert({
+              username: userId.username,
+              password: userId.password
+              }).then(function() {
+                response.cookie('username', username)
+                response.redirect('/');
+            });
+                    // now log the user in, etc.
+            } else {
+                response.render('loggedin', {
+                  title: 'Authorize Me!',
+                  user: null,
+                  info: "Password didn't match confirmation"
+                });
+            }
+        });
+    });
+});
 
 
 module.exports = router;

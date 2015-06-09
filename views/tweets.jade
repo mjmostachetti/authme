@@ -12,9 +12,14 @@ block content
 	div
 		h2 Here are all the tweets!
 		p Order Username By: 
-		a(href="/orderByUserDesc") Desc
+		a(href="/orderByUserDesc") Desc(Descending)
 		br
-		a(href="/orderByUserAsc") Asc
+		a(href="/orderByUserAsc") Name(Ascending)
+		br
+		a(href='/orderByDateDesc') Date(Descending)
+		br
+		a(href='/orderByDateAsc') Date(Ascending)
+		br
 		ul
 			p -------------------------------------------------
 			each val in data
