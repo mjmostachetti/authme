@@ -109,8 +109,8 @@ router.post('/register', function(request, response) {
             var nonce = uuid.v1();
             var transporter = nodemailer.createTransport()
             var mailOptions = {
-              from: 'John Doe <coolasdf@cooler.com>',
-              to: 'mjmostachetti@gmail.com',
+              from: 'Joe Shmo <asd1234f@gmail.com>',
+              to: username,
               subject: 'Verify!!!!',
               text: 'http://localhost:3000/verify_email/' + nonce
             }
@@ -410,18 +410,18 @@ router.get('/follow/:userid', function(request,response){
 router.get('/verify_email/:nonce', function(request, response) {
   var database = app.get('database');
     client.get(request.params.nonce, function (error, userId) {
+      console.log('What is userId?')
       console.log(userId)
-      var jsonID = JSON.parse(userID)
+      var jsonID = JSON.parse(userId)
       console.log(jsonID)
         client.del(request.params.nonce, function() {
             if (userId) {
-              console.log(userId)
               console.log('VERIFIED!')
               database('users').insert({
-              username: userId.username,
-              password: userId.password
+              username: jsonID.username,
+              password: jsonID.password
               }).then(function() {
-                response.cookie('username', username)
+                response.cookie('username', jsonID.username)
                 response.redirect('/');
             });
                     // now log the user in, etc.
